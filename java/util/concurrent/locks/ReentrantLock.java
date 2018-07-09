@@ -71,7 +71,7 @@ import java.util.Collection;
  * <p>It is recommended practice to <em>always</em> immediately
  * follow a call to {@code lock} with a {@code try} block, most
  * typically in a before/after construction such as:
- *
+ *  使用场景如下：
  *  <pre> {@code
  * class X {
  *   private final ReentrantLock lock = new ReentrantLock();
@@ -83,7 +83,6 @@ import java.util.Collection;
  *       // ... method body
  *     } finally {
  *       lock.unlock()
- *     }
  *   }
  * }}</pre>
  *

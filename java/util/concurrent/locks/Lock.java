@@ -43,6 +43,8 @@ import java.util.concurrent.TimeUnit;
  * quite different properties, and may support multiple associated
  * {@link Condition} objects.
  *
+ * 相比较synchronized隐式锁有更广泛的使用场景，支持更灵活的使用结构，并且可以搭配Condition实现多路通知
+ *
  * <p>A lock is a tool for controlling access to a shared resource by
  * multiple threads. Commonly, a lock provides exclusive access to a
  * shared resource: only one thread at a time can acquire the lock and
@@ -169,6 +171,7 @@ public interface Lock {
     /**
      * Acquires the lock.
      *
+     * 如果当前锁没有被其它线程持有，则立即获取。否则当前线程会进入休眠状态直到获取锁 <br/>
      * <p>If the lock is not available then the current thread becomes
      * disabled for thread scheduling purposes and lies dormant until the
      * lock has been acquired.
@@ -187,6 +190,8 @@ public interface Lock {
      * Acquires the lock unless the current thread is
      * {@linkplain Thread#interrupt interrupted}.
      *
+     * 尝试获取锁，但是这个动作可以被中断(不会像lock方法一样一直阻塞等待获取锁)
+     *
      * <p>Acquires the lock if it is available and returns immediately.
      *
      * <p>If the lock is not available then the current thread becomes
@@ -198,6 +203,10 @@ public interface Lock {
      * <li>Some other thread {@linkplain Thread#interrupt interrupts} the
      * current thread, and interruption of lock acquisition is supported.
      * </ul>
+     *
+     * 两种场景：
+     * 1.当前线程获取到锁
+     * 2.在获取锁的过程中被其它线程中断，会返回中断异常信息
      *
      * <p>If the current thread:
      * <ul>
@@ -234,6 +243,10 @@ public interface Lock {
     /**
      * Acquires the lock only if it is free at the time of invocation.
      *
+     * 尝试立即获取锁
+     * 1. 如果当前锁可用(未被其它线程持有)，获取到锁并立即返回true
+     * 2. 如果当前锁不可用，立即返回false
+     *
      * <p>Acquires the lock if it is available and returns immediately
      * with the value {@code true}.
      * If the lock is not available then this method will return
@@ -263,6 +276,12 @@ public interface Lock {
     /**
      * Acquires the lock if it is free within the given waiting time and the
      * current thread has not been {@linkplain Thread#interrupt interrupted}.
+     *
+     * 尝试在指定时间内获取锁
+     * 1. 锁可用(未被其它线程持有)，获取到锁且立即返回true
+     * 2. 在指定时间内被其它线程中断，则抛出中断信息
+     * 3. 一直阻塞直到在指定时间内获取到锁，返回true
+     * 4. 超出指定时间还未获取到锁，返回false
      *
      * <p>If the lock is available this method returns immediately
      * with the value {@code true}.
@@ -323,6 +342,8 @@ public interface Lock {
     /**
      * Releases the lock.
      *
+     * 释放锁
+     *
      * <p><b>Implementation Considerations</b>
      *
      * <p>A {@code Lock} implementation will usually impose
@@ -337,6 +358,8 @@ public interface Lock {
     /**
      * Returns a new {@link Condition} instance that is bound to this
      * {@code Lock} instance.
+     *
+     * 返回一个当前锁的Condition实例，在调用condition.await()之前当前线程必须持有锁，调用之后会原子的释放锁
      *
      * <p>Before waiting on the condition the lock must be held by the
      * current thread.

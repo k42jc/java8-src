@@ -231,6 +231,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
 
     /**
      * The default initial capacity - MUST be a power of two.
+     * 默认初始容量 16
      */
     static final int DEFAULT_INITIAL_CAPACITY = 1 << 4; // aka 16
 
@@ -238,11 +239,13 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      * The maximum capacity, used if a higher value is implicitly specified
      * by either of the constructors with arguments.
      * MUST be a power of two <= 1<<30.
+     * 最大允许容量
      */
     static final int MAXIMUM_CAPACITY = 1 << 30;
 
     /**
      * The load factor used when none specified in constructor.
+     * 默认加载因子，HashMap不扩容的情况下允许容量*加载因子个元素存在，当超过这一阙值会引发扩容
      */
     static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
@@ -253,6 +256,8 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      * than 2 and should be at least 8 to mesh with assumptions in
      * tree removal about conversion back to plain bins upon
      * shrinkage.
+     * 存放数据的链表允许最大长度，超过这个值会将链表转为红黑树(比如极端情况下hash算法将所有key hash到数组中同一个位置，即所有元素都存放在同一个链表下面，会非常影响检索/操作效率)
+     * java8的更新之一，极端情况下可以提升HashMap的效率
      */
     static final int TREEIFY_THRESHOLD = 8;
 
@@ -260,6 +265,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      * The bin count threshold for untreeifying a (split) bin during a
      * resize operation. Should be less than TREEIFY_THRESHOLD, and at
      * most 6 to mesh with shrinkage detection under removal.
+     * 从红黑树退化成链表的阙值
      */
     static final int UNTREEIFY_THRESHOLD = 6;
 
@@ -268,6 +274,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      * (Otherwise the table is resized if too many nodes in a bin.)
      * Should be at least 4 * TREEIFY_THRESHOLD to avoid conflicts
      * between resizing and treeification thresholds.
+     * HashMap内部元素超过64才会考虑转换为红黑树(元素个数超过64然后才会考虑结合上面的条件转换为红黑树)
      */
     static final int MIN_TREEIFY_CAPACITY = 64;
 
@@ -688,6 +695,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      * Otherwise, because we are using power-of-two expansion, the
      * elements from each bin must either stay at same index, or move
      * with a power of two offset in the new table.
+     * 扩容操作
      *
      * @return the table
      */
@@ -700,18 +708,17 @@ public class HashMap<K,V> extends AbstractMap<K,V>
             if (oldCap >= MAXIMUM_CAPACITY) {
                 threshold = Integer.MAX_VALUE;
                 return oldTab;
-            }
-            else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY &&
-                     oldCap >= DEFAULT_INITIAL_CAPACITY)
+            }else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY && oldCap >= DEFAULT_INITIAL_CAPACITY) {
+                // 容量double、允许最大元素个数double
                 newThr = oldThr << 1; // double threshold
-        }
-        else if (oldThr > 0) // initial capacity was placed in threshold
-            newCap = oldThr;
-        else {// 初始化操作               // zero initial threshold signifies using defaults
+            }
+        }else if (oldThr > 0) { // initial capacity was placed in threshold
+            newCap = oldThr;// 最初的容量等于初始化时计算出来的阙值
+        }else {// 初始化操作               // zero initial threshold signifies using defaults
             newCap = DEFAULT_INITIAL_CAPACITY;
             newThr = (int)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
         }
-        if (newThr == 0) {
+        if (newThr == 0) {// 与上面double效果一致，只是先把容量double再在这里计算元素阙值，用于容量小于默认16个时的操作
             float ft = (float)newCap * loadFactor;
             newThr = (newCap < MAXIMUM_CAPACITY && ft < (float)MAXIMUM_CAPACITY ?
                       (int)ft : Integer.MAX_VALUE);

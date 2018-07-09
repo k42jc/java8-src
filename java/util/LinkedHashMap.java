@@ -465,6 +465,7 @@ public class LinkedHashMap<K,V>
     }
 
     /**
+     * 子类可覆盖本方法实现简单的LRU(最近最少使用)缓存方案
      * Returns <tt>true</tt> if this map should remove its eldest entry.
      * This method is invoked by <tt>put</tt> and <tt>putAll</tt> after
      * inserting a new entry into the map.  It provides the implementor

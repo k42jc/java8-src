@@ -300,6 +300,11 @@ public abstract class AbstractQueuedSynchronizer
 
     /**
      * Wait queue node class.
+     * 用于实现"同步锁"的等待队列
+     *
+     * "CLH"同步队列的变种，CLH多用于自旋锁。
+     * 每个节点有一个"status"字段用于追踪线程是否需要被阻塞，每当队列的前一个节点被释放(那个线程已经执行了，从队列移除)，当前节点会被唤醒。
+     * 队列中的每个节点是否会唤醒还取决于具体实现形式，"status"状态也不能保证哪个线程一定获取锁，也就是说头节点不是一定能获取到锁
      *
      * <p>The wait queue is a variant of a "CLH" (Craig, Landin, and
      * Hagersten) lock queue. CLH locks are normally used for
@@ -316,6 +321,7 @@ public abstract class AbstractQueuedSynchronizer
      * it only gives the right to contend.  So the currently released
      * contender thread may need to rewait.
      *
+     * 尾部入队、头部出队
      * <p>To enqueue into a CLH lock, you atomically splice it in as new
      * tail. To dequeue, you just set the head field.
      * <pre>
@@ -576,9 +582,10 @@ public abstract class AbstractQueuedSynchronizer
     static final long spinForTimeoutThreshold = 1000L;
 
     /**
+     * 将节点添加到队列末尾，cas设置尾节点
      * Inserts node into queue, initializing if necessary. See picture above.
      * @param node the node to insert
-     * @return node's predecessor
+     * @return node's predecessor 返回插入节点的前一节点(就是原来的尾节点)
      */
     private Node enq(final Node node) {
         for (;;) {
